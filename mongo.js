@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const password = process.argv[2];
-const uri = `mongodb+srv://bricenomigueles:${password}@cluster0.dkwcx.mongodb.net/PhonebookApp?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = 
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 async function run() {
   try {    
