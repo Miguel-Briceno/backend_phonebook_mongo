@@ -53,36 +53,39 @@ app.delete("/api/persons/:id", (request, response, next) => {
 
 app.post("/api/persons/", (request, response, next) => {
   const { name, number } = request.body; 
-  console.log("Received data:", { name, number });
+  
   if (!name || !number) {
     return response.status(400).json({ error: "name or number is missing" });
   }
+  const contact = new Contact({
+    name: name,
+    number: number,
+  });
+  contact
+      .save()
+      .then((savedContact) => {
+            response.json(savedContact);
+      })
+      .catch((error) => next(error));     
+});
 
+app.put("/api/persons/", (request, response, next) => {
+  const { name, number } = request.body;
+  const { id } = request.params;
+  if (!name || !number) {
+    return response.status(400).json({ error: "name or number is missing" });
+  }
   Contact
-    .findOne({ name: name })
-    .then( existingContact => {
-            if (existingContact) {
-              existingContact.number= number;
-
-              existingContact
-                  .save()
-                  .then( updateContact =>{response.json(updateContact)})
-                  .catch(error=> next(error))               
-            } else {
-                    const contact = new Contact({
-                            name: name,
-                            number: number,
-                    });
-
-              contact
-                  .save()
-                  .then((savedContact) => {
-                          response.json(savedContact);
-                  })
-                  .catch((error) => next(error));       
-              }
-    })
-    .catch(error=>next(error))
+      .findByIdAndUpdate(id, {name, number}, { new: true })
+      .then( contactUpdate =>{
+        if(contactUpdate){
+          response.json(contactUpdate)
+        }else{
+          response.status(404).send({ error: "contact not found" });
+        }
+        
+      })
+      .catch(error=>next(error))
 });
 
 app.use((error, request, response, next) => {
