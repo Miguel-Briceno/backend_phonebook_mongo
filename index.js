@@ -51,30 +51,38 @@ app.delete("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.post("/api/persons/", (request, response) => {
-  const body = request.body;
-
-  if (!body.name || !body.number) {
+app.post("/api/persons/", (request, response, next) => {
+  const { name, number } = request.body; 
+  console.log("Received data:", { name, number });
+  if (!name || !number) {
     return response.status(400).json({ error: "name or number is missing" });
   }
 
-  Contact.findOne({ name: body.name }).then((existingContact) => {
-    if (existingContact) {
-      return response.status(400).json({ error: "name must be unique" });
-    } else {
-      const contact = new Contact({
-        name: body.name,
-        number: body.number,
-      });
+  Contact
+    .findOne({ name: name })
+    .then( existingContact => {
+            if (existingContact) {
+              existingContact.number= number;
 
-      contact
-        .save()
-        .then((savedContact) => {
-          response.json(savedContact);
-        })
-        .catch((error) => next(error));       
-    }
-  });
+              existingContact
+                  .save()
+                  .then( updateContact =>{response.json(updateContact)})
+                  .catch(error=> next(error))               
+            } else {
+                    const contact = new Contact({
+                            name: name,
+                            number: number,
+                    });
+
+              contact
+                  .save()
+                  .then((savedContact) => {
+                          response.json(savedContact);
+                  })
+                  .catch((error) => next(error));       
+              }
+    })
+    .catch(error=>next(error))
 });
 
 app.use((error, request, response, next) => {
